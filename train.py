@@ -13,12 +13,12 @@ if ipython:
     from IPython import display
 
 
-parser = argparse.ArgumrntParser(description="train")
+parser = argparse.ArgumentParser(description="train")
 parser.add_argument("--output_dir", type=str, default=".",help="output_dir")
 parser.add_argument("--epoch",type=int,default=100,help="Epochs")
 parser.add_argument("--lr_gen",type=float,default=0.00005,help="Learning rate of generator")
 parser.add_argument("--lr_dis",type=float,default=0.00005,help="Learning rate of discriminator")
-parser.add_argumrnt("--batch_size",type=int,default=64,help="Batch_Size")
+parser.add_argument("--batch_size",type=int,default=64,help="Batch_Size")
 parser.add_argument("--n_critics",type=int,default=5,help="number of Critics")
 parser.add_argument("--c",type=float,default=0.01,help="Gradint Clipping Value")
 parser.add_argument("--l_depth",type=int,default=100,help="latent depth")
