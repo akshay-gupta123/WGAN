@@ -32,7 +32,7 @@ def make_discriminator(name="discriminator"):
         model.add(layer.Dropout(0.2))
          
     model.add(layer.Flatten())
-    model.add(layer.Dense(unit=1,kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
+    model.add(layer.Dense(units=1,kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
     
     return model
          
