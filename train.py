@@ -34,7 +34,7 @@ disc_summary_writer=tf.summary.create_file_writer(discriminator_dir)
 gen_summary_writer=tf.summary.create_file_writer(generator_dir)
 
 BUFFER_SIZE = 60000
-seed = tf.random.normal([args.num_exp, args.l_dims])
+seed = tf.random.normal([args.num_exp, args.l_depth])
 
 # Loading  MNIST_Dataset
 (train_images, train_labels),(_,_) = tf.keras.datasets.mnist.load_data()
