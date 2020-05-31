@@ -50,15 +50,10 @@ discriminator = make_discriminator()
 losses = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def generator_loss(fake):
-    fake_output = generator(fake,training = True)
     loss = losses(tf.ones_like(fake),fake)
     return loss
 
 def discriminator_loss(real,fake):
-    fake_ouput1 = generator(fake,training=True)
-    true_output = discriminator(real,training=True)
-    fake_ouput2 = discriminator(fake_ouput1,training=True)
-    
     true_score = losses(tf.ones_like(true_output),true_output)
     fake_score = losses(tf.zeros_like(fake_ouput2),fake_ouput2)
     loss = true_score+fake_score
@@ -77,7 +72,10 @@ ckpt_manager = tf.train.CheckpointManager(checkpoint,args.output_dir,checkpoint_
 @tf.function
 def train_dis_step(real,fake):
     with tf.GradientTape() as disc_tape:
-        disc_loss = discriminator_loss(real,fake)
+        generated_image = generator(fake,training=True)
+        true_output = discriminator(real,training=True)
+        fake_ouput  = discriminator(generted_image,training=True)
+        disc_loss = discriminator_loss(true_output,fake_output)
         grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variable)
         discriminator_optimizer.apply_gradient(zip(grad_disc,discriminator.trainable_variable))
     
@@ -86,7 +84,8 @@ def train_dis_step(real,fake):
 @tf.function
 def train_gen_step(fake):
     with tf.GraidientTape() as gen_tape:
-        gen_loss = generator_loss(fake)
+        fake_output = generator(fake,training = True)
+        gen_loss = generator_loss(fake_output)
         grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variable)
         generator_optimizer.apply_gradient(zip(grad_gen,generator.trainable_variable))
                 
