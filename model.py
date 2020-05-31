@@ -23,8 +23,8 @@ def make_generator(name="generator") :
 def make_discriminator(name="discriminator"):
     model = tf.keras.Sequential(name=name)
     
-    filter_list = [64,128,256,512]
-    stride_list = [2,2,2,2]
+    filter_list = [64,128]
+    stride_list = [2,2,]
     for filters,strides in zip(filter_list,stride_list):
         model.add(layer.Conv2DTranspose(filters=filters,strides=strides,kernel_size=(3,3),padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
         model.add(layer.BatchNormalization())
