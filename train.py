@@ -62,7 +62,7 @@ def discriminator_loss(real,fake):
 generator_optimizer = tf.keras.optimizers.RMSprop(lr=args.lr_gen)
 discriminator_optimizer = tf.keras.optimizers.RMSprop(lr=args.lr_dis)
 
-checkpoint = tf.train.Ckeckpoint(generator_optimizer=generator_optimizer,
+checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
                                  discriminator_optimizer=discriminator_optimizer,
                                  generator=generator,
                                  discriminator=discriminator)
@@ -76,8 +76,8 @@ def train_dis_step(real,fake):
         true_output = discriminator(real,training=True)
         fake_ouput  = discriminator(generted_image,training=True)
         disc_loss = discriminator_loss(true_output,fake_output)
-        grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variable)
-        discriminator_optimizer.apply_gradient(zip(grad_disc,discriminator.trainable_variable))
+        grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variables)
+        discriminator_optimizer.apply_gradients(zip(grad_disc,discriminator.trainable_variables))
     
     return disc_loss
 
@@ -86,8 +86,8 @@ def train_gen_step(fake):
     with tf.GraidientTape() as gen_tape:
         fake_output = generator(fake,training = True)
         gen_loss = generator_loss(fake_output)
-        grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variable)
-        generator_optimizer.apply_gradient(zip(grad_gen,generator.trainable_variable))
+        grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variables)
+        generator_optimizer.apply_gradients(zip(grad_gen,generator.trainable_variables))
                 
     for w in discriminator.trainable_variable:
           w.assign(tf.clip_by_value(w,-args.c,args.c))
@@ -95,17 +95,18 @@ def train_gen_step(fake):
     return gen_loss    
 
 def main():
-    for i in range(1,args.epochs+1):
+    for i in range(1,args.epoch+1):
         disc_loss = 0
         for n in range(1,args.n_critics+1):
-            print("Epoch: %i ====> %i / %i" % (i, i%args.batch_size, args.batch_size), end="\r")
-
+             
             for x in train_dataset.take(1):
                 fake = np.random.normal(size=[args.batch_size,args.l_depth]).astype(np.float32)
-                
                 disc_loss = train_dis_step(x,fake)
+                
                 with disc_summary_writer.as_default():
                     tf.summary.scalar("discriminator_loss",disc_loss,step=i)
+            
+            print(f"Epoch:{i} step=>{n} : disciminator_loss:{disc_loss}")
 
         gene_loss = train_gen_step(fake)
         with gen_summary_writer.as_default():
@@ -114,7 +115,7 @@ def main():
         print(f'Epoch {i} results: Discriminator Loss: {disc_loss}' )
         print(f'Generator Loss: {gene_loss}')
        
-        if (i) % 10 == 0:
+        if i % 10 == 0:
               ckpt_manager.save()
        
         if ipython:
@@ -125,6 +126,7 @@ def main():
         display.clear_output(wait=True)
     generate_and_save_images(generator, i, outdir = args.outdir)
                   
-    
+   
+main()
 
     
