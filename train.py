@@ -54,8 +54,8 @@ def generator_loss(fake):
     return loss
 
 def discriminator_loss(real,fake):
-    true_score = losses(tf.ones_like(true_output),true_output)
-    fake_score = losses(tf.zeros_like(fake_ouput2),fake_ouput2)
+    true_score = losses(tf.ones_like(real),real)
+    fake_score = losses(tf.zeros_like(fake),fake)
     loss = true_score+fake_score
     return loss
 
@@ -74,7 +74,7 @@ def train_dis_step(real,fake):
     with tf.GradientTape() as disc_tape:
         generated_image = generator(fake,training=True)
         true_output = discriminator(real,training=True)
-        fake_ouput  = discriminator(generted_image,training=True)
+        fake_output  = discriminator(generated_image,training=True)
         disc_loss = discriminator_loss(true_output,fake_output)
         grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variables)
         discriminator_optimizer.apply_gradients(zip(grad_disc,discriminator.trainable_variables))
@@ -89,7 +89,7 @@ def train_gen_step(fake):
         grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variables)
         generator_optimizer.apply_gradients(zip(grad_gen,generator.trainable_variables))
                 
-    for w in discriminator.trainable_variable:
+    for w in discriminator.trainable_variables:
           w.assign(tf.clip_by_value(w,-args.c,args.c))
     
     return gen_loss    
@@ -106,7 +106,8 @@ def main():
                 with disc_summary_writer.as_default():
                     tf.summary.scalar("discriminator_loss",disc_loss,step=i)
             
-            print(f"Epoch:{i} step=>{n} : disciminator_loss:{disc_loss}")
+            if n%5==0:
+             print(f"Epoch:{i} step=>{n} : disciminator_loss:{disc_loss}")
 
         gene_loss = train_gen_step(fake)
         with gen_summary_writer.as_default():
@@ -119,8 +120,8 @@ def main():
               ckpt_manager.save()
        
         if ipython:
-            display.clear(wait=True)  
-        generate_and_save_images(generator, i , outdir = args.outdir)
+            display.clear_output(wait=True)  
+        generate_and_save_images(generator, i , seed , outdir = args.outdir)
     
     if ipython:
         display.clear_output(wait=True)
