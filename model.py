@@ -12,7 +12,7 @@ def make_generator(name="generator") :
     filter_list = [128,64,1]
     stride_list = [1,2,2] 
     for filters,strides in zip(filter_list[:-1],stride_list[:-1]):
-        model.add(layer.Conv2DTranspose(filters=filters,strides=strides,kernl_size=(3,3),padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02))) 
+        model.add(layer.Conv2DTranspose(filters=filters,strides=strides,kernel_size=(3,3),padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02))) 
         model.add(layer.BatchNormalization())
         model.add(layer.ReLU())
         
