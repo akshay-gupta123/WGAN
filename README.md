@@ -1,6 +1,6 @@
 # TENSORFLOW IMPLEMENTATION OF WGAN
 
-## USAGE
+## Usage:
 ```bash
 $ python3 train.py
 ```
@@ -10,7 +10,7 @@ $ python3 train.py
 %run train.py
 ```
 
-## HELP LOG :
+## Help Log:
 ```
 usage: train.py [-h] [--dataset {mnist,cifar-10}]
                 [--learning_rate LEARNING_RATE] [--n_clip N_CLIP]
@@ -37,7 +37,7 @@ optional arguments:
   --save_dir SAVE_DIR   directory for checkpoint models
 ```
 
-## Contributed by :
+## Contributed by:
 * [Akshay Gupta](https://github.com/akshay-gupta123)
 
 ## Refrence :
@@ -47,7 +47,7 @@ optional arguments:
 * **Tags** : Neural Network,Genreative Adversirial Network
 * **Published** : 6 Dec, 2017
 
-# Summary :
+# Summary:
 
 ## Introduction:
 
@@ -115,6 +115,7 @@ I train model having architecture of DCGAN with default values as follows:
 * Batch Size: 64
 
 <strong><ins>Generated after 60 epochs on MNIST Dataset</ins></strong>
+
 <img src="/asset/image_gen.png"/>
 
 <strong><ins>Generator Loss</ins></strong>
