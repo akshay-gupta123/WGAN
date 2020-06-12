@@ -69,7 +69,7 @@ def train_step_dis(args, real_sample):
 def test_step(args, epoch):
 	z = tf.random.uniform([args.batch_size, args.noise_dim], -1.0, 1.0)
 	fake_sample = args.gen(z)
-	generate_and_save_images(fake_sample.numpy(), args.samples_dir, epoch)
+	generate_and_save_images(epoch,fake_sample.numpy())
 
 ####################################################################################
 
