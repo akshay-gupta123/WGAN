@@ -50,24 +50,19 @@ discriminator = make_discriminator()
 losses = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def generator_loss(fake):
-    fake_output = generator(fake,training = True)
     loss = losses(tf.ones_like(fake),fake)
     return loss
 
 def discriminator_loss(real,fake):
-    fake_ouput1 = generator(fake,training=True)
-    true_output = discriminator(real,training=True)
-    fake_ouput2 = discriminator(fake_ouput1,training=True)
-    
-    true_score = losses(tf.ones_like(true_output),true_output)
-    fake_score = losses(tf.zeros_like(fake_ouput2),fake_ouput2)
+    true_score = losses(tf.ones_like(real),real)
+    fake_score = losses(tf.zeros_like(fake),fake)
     loss = true_score+fake_score
     return loss
 
 generator_optimizer = tf.keras.optimizers.RMSprop(lr=args.lr_gen)
 discriminator_optimizer = tf.keras.optimizers.RMSprop(lr=args.lr_dis)
 
-checkpoint = tf.train.Ckeckpoint(generator_optimizer=generator_optimizer,
+checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
                                  discriminator_optimizer=discriminator_optimizer,
                                  generator=generator,
                                  discriminator=discriminator)
@@ -77,36 +72,42 @@ ckpt_manager = tf.train.CheckpointManager(checkpoint,args.output_dir,checkpoint_
 @tf.function
 def train_dis_step(real,fake):
     with tf.GradientTape() as disc_tape:
-        disc_loss = discriminator_loss(real,fake)
-        grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variable)
-        discriminator_optimizer.apply_gradient(zip(grad_disc,discriminator.trainable_variable))
+        generated_image = generator(fake,training=True)
+        true_output = discriminator(real,training=True)
+        fake_output  = discriminator(generated_image,training=True)
+        disc_loss = discriminator_loss(true_output,fake_output)
+        grad_disc = disc_tape.gradient(disc_loss,discriminator.trainable_variables)
+        discriminator_optimizer.apply_gradients(zip(grad_disc,discriminator.trainable_variables))
     
     return disc_loss
 
 @tf.function
 def train_gen_step(fake):
     with tf.GraidientTape() as gen_tape:
-        gen_loss = generator_loss(fake)
-        grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variable)
-        generator_optimizer.apply_gradient(zip(grad_gen,generator.trainable_variable))
+        fake_output = generator(fake,training = True)
+        gen_loss = generator_loss(fake_output)
+        grad_gen = gen_tape.gradient(gen_loss,generator.trainable_variables)
+        generator_optimizer.apply_gradients(zip(grad_gen,generator.trainable_variables))
                 
-    for w in discriminator.trainable_variable:
+    for w in discriminator.trainable_variables:
           w.assign(tf.clip_by_value(w,-args.c,args.c))
     
     return gen_loss    
 
 def main():
-    for i in range(1,args.epochs+1):
+    for i in range(1,args.epoch+1):
         disc_loss = 0
         for n in range(1,args.n_critics+1):
-            print("Epoch: %i ====> %i / %i" % (i, i%args.batch_size, args.batch_size), end="\r")
-
+             
             for x in train_dataset.take(1):
                 fake = np.random.normal(size=[args.batch_size,args.l_depth]).astype(np.float32)
-                
                 disc_loss = train_dis_step(x,fake)
+                
                 with disc_summary_writer.as_default():
                     tf.summary.scalar("discriminator_loss",disc_loss,step=i)
+            
+            if n%5==0:
+             print(f"Epoch:{i} step=>{n} : disciminator_loss:{disc_loss}")
 
         gene_loss = train_gen_step(fake)
         with gen_summary_writer.as_default():
@@ -115,17 +116,18 @@ def main():
         print(f'Epoch {i} results: Discriminator Loss: {disc_loss}' )
         print(f'Generator Loss: {gene_loss}')
        
-        if (i) % 10 == 0:
+        if i % 10 == 0:
               ckpt_manager.save()
        
         if ipython:
-            display.clear(wait=True)  
-        generate_and_save_images(generator, i , outdir = args.outdir)
+            display.clear_output(wait=True)  
+        generate_and_save_images(generator, i , seed , outdir = args.outdir)
     
     if ipython:
         display.clear_output(wait=True)
     generate_and_save_images(generator, i, outdir = args.outdir)
                   
-    
+   
+main()
 
     
