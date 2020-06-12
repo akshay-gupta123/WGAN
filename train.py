@@ -9,13 +9,14 @@ import datetime
 
 
 ###################################################################################
+# Parsing all arguments
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type = str, choices = ['mnist', 'cifar-10'], 
 	default = 'mnist', help = 'choice of dataset')
 parser.add_argument('--learning_rate', type = float, 
 	default = 5e-4, help = 'initial learning rate')
-parser.add_argument('n_clip', type = float, 
+parser.add_argument('--n_clip', type = float, 
 	default = 1e-2, help = 'Cliping weight')
 parser.add_argument('--n_epoch', type = int, 
 	default = 50, help = 'max # of epoch')
@@ -31,6 +32,7 @@ parser.add_argument('--save_dir', type = str,
 	default = './models/', help = 'directory for checkpoint models')
 
 #####################################################################################
+# Creating directory for Tensorboard
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
@@ -39,6 +41,7 @@ train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
 #######################################################################################
+# Training Steps
 
 def train_step_gen(args):
 	with tf.GradientTape() as tape:
@@ -69,9 +72,10 @@ def train_step_dis(args, real_sample):
 def test_step(args, epoch):
 	z = tf.random.uniform([args.batch_size, args.noise_dim], -1.0, 1.0)
 	fake_sample = args.gen(z)
-	generate_and_save_images(fake_sample.numpy(), args.samples_dir, epoch)
+	generate_and_save_images(epoch,fake_sample.numpy())
 
 ####################################################################################
+# Trainig loop
 
 def train(args):
     for epoch in range(args.n_epoch):
@@ -88,8 +92,8 @@ def train(args):
                     args.dis_loss.result()))
         
         with train_summary_writer.as_default():
-            tf.summary.scalar("dis_loss",args.dis_loss.result(),step=epoch)
-            tf.summary.scalar("gen_loss",args.gen_loss.result(),step=epoch)
+            tf.summary.scalar("Discriminator loss",args.dis_loss.result(),step=epoch)
+            tf.summary.scalar("Generator loss",args.gen_loss.result(),step=epoch)
         test_step(args, epoch)
         args.dis_loss.reset_states()
         args.gen_loss.reset_states()

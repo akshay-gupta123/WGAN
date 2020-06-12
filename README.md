@@ -12,7 +12,7 @@ $ python3 train.py
 
 ## HELP LOG :
 ```
-
+<img src="/asset/help-log.png"/>
 ```
 
 ## Contributed by :
@@ -22,12 +22,12 @@ $ python3 train.py
 * **Title** : Wassertian GAN
 * **Link** : https://arxiv.org/abs/1701.07875
 * **Author** : Martin Arjovsky,Soumith Chintala and L´eon Bottou
-* **Tags** : Genreative Adversirial Network
+* **Tags** : Neural Network,Genreative Adversirial Network
 * **Published** : 6 Dec, 2017
 
 # Summary :
 
-## INRODUCTION
+## Introduction:
 
 <strong>Generative adversarial network</strong> contains the two components: generator and discriminator. The training process is just like zero-sum game, and it can be simply shown in Figure 1. 
 <img src="/asset/gan.png"/>
@@ -36,7 +36,7 @@ For generator, it should generate the image which is just like the real one. On 
 
 The problem this paper is concerned with is that of unsupervised learning.Authors direct their attention towards various ways to measure how close the model distribution and the real distribution are, or equvalently on the various ways to define a distance or divergence  ρ(Pθ, Pr) where the real data distribution Pr admits a density and Pθ is the distribution of the parametrized density. The most fundamental difference between such distances is their impact on the convergence of sequences of probability distributions. In order to optimize the parameter θ, it is of course desirable to define our model distribution Pθ in a manner that makes the mapping θ→Pθ continuous.
 
-## DIFFERENT DISTANCES :
+## Different Distances:
 
 Let X be a compact metric set (such as the space of images [0, 1]d) and let Σ denote the set of all the Borel subsets of X . Let
 Prob(X) denote the space of probability measures defined on X . We can now define elementary distances and divergences between two distributions P<sub>r</sub>, P<sub>g</sub> ∈ Prob(X ):
@@ -76,7 +76,7 @@ The training process of WGAN is shown above which is very similar like usual GAN
 
 After the experiment by Martin, the WGAN can avoid the problem of gradient vanishment. As you can see in the Figure , the gradient of usual GAN drops to zero and becomes saturate phenomenon. However, EM-distance provides meaningful loss and the model can still learn gradually.
 
-## RESULT: 
+## Result: 
 
 I train model having architecture of DCGAN with default values as follows:
 
@@ -89,7 +89,7 @@ I train model having architecture of DCGAN with default values as follows:
 <strong>Discriminator Loss</strong>
 <img src="/asset/dloss.png"/>
 
-## CONCLUSION:
+## Conclusion:
 
 An algorithm deemed as WGAN is introduced, an alternative to traditional GAN training. In this new model,the stability of learning gets improved, get rid of problems like mode collapse, and provide meaningful learning curves useful for debugging and hyperparameter searches. Furthermore, the corresponding optimization problem seems to be sound, and provided extensive theoretical work highlighting the deep connections to other distances between distributions.
 
