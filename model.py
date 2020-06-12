@@ -1,39 +1,42 @@
-import tensorflow.keras.layers as layer
 import tensorflow as tf
-import numpy as np
 
-def make_generator(name="generator") :
-    model = tf.keras.Sequential(name=name)
-    model.add(layer.Dense(units=7*7*256,kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
-    model.add(layer.BatchNormalization())
-    model.add(layer.ReLU())
-    model.add(layer.Reshape(target_shape=(7,7,256)))
-    
-    filter_list = [128,64,1]
-    stride_list = [1,2,2] 
-    for filters,strides in zip(filter_list[:-1],stride_list[:-1]):
-        model.add(layer.Conv2DTranspose(filters=filters,strides=strides,kernel_size=(3,3),padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02))) 
-        model.add(layer.BatchNormalization())
-        model.add(layer.ReLU())
+class Discriminator(tf.keras.Model):
+	def __init__(self):
+		super(Discriminator, self).__init__()
+		self.conv1 = tf.keras.layers.Conv2D(64, 5, 2, activation = tf.nn.leaky_relu)
+		self.dropout1 = tf.keras.layers.Dropout(0.3)
+		self.conv2 = tf.keras.layers.Conv2D(128, 5, 2, activation = tf.nn.leaky_relu)
+		self.dropout2 = tf.keras.layers.Dropout(0.3)
+		self.flatten = tf.keras.layers.Flatten()
+		self.fc1 = tf.keras.layers.Dense(1)
+        self.batch_norm = tf.keras.layers.BatchNormalization()
         
-    model.add(layer.Conv2DTranspose(filters=filter_list[-1],kernel_size=(3,3),strides=stride_list[-1],padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
-    
-    return model 
+	def call(self, x):
+		x = self.dropout1(self.conv1(x))
+		x = self.dropout2(self.conv2(x))
+        x = self.batch_norm(x)
+		x = self.flatten(x)
+		x = self.fc1(x)
+		return x
 
-def make_discriminator(name="discriminator"):
-    model = tf.keras.Sequential(name=name)
-    
-    filter_list = [64,128]
-    stride_list = [2,2,]
-    for filters,strides in zip(filter_list,stride_list):
-        model.add(layer.Conv2DTranspose(filters=filters,strides=strides,kernel_size=(3,3),padding="same",kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
-        model.add(layer.BatchNormalization())
-        model.add(layer.ReLU())
-        model.add(layer.Dropout(0.2))
-         
-    model.add(layer.Flatten())
-    model.add(layer.Dense(units=1,kernel_initializer=tf.random_normal_initializer(mean=0,stddev=0.02)))
-    
-    return model
-         
-    
+class Generator(tf.keras.Model):
+	def __init__(self):
+		super(Generator, self).__init__()
+
+		def _reshape_func(x):
+			dims = x.get_shape().as_list()
+			return tf.reshape(x, [dims[0], 7, 7, 128])
+
+		self.fc1 = tf.keras.layers.Dense(7 * 7 * 128)
+		self.reshape = _reshape_func
+		self.conv1 = tf.keras.layers.Conv2DTranspose(64, 5, 2, activation = tf.nn.relu, padding = 'same')
+		self.conv2 = tf.keras.layers.Conv2DTranspose(32, 5, 2, activation = tf.nn.relu, padding = 'same')
+		self.conv3 = tf.keras.layers.Conv2DTranspose(1, 3, 1, activation = tf.nn.tanh, padding = 'same')
+		
+	def call(self, x):
+		x = self.fc1(x)
+		x = self.reshape(x)
+		x = self.conv1(x)
+		x = self.conv2(x)
+		x = self.conv3(x)
+		return x
