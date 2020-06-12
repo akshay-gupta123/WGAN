@@ -5,7 +5,10 @@ from dataloader import *
 import argparse
 import tensorflow as tf
 import numpy as np
+import datetime
 
+
+###################################################################################
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type = str, choices = ['mnist', 'cifar-10'], 
@@ -27,6 +30,15 @@ parser.add_argument('--samples_dir', type = str,
 parser.add_argument('--save_dir', type = str,
 	default = './models/', help = 'directory for checkpoint models')
 
+#####################################################################################
+
+current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
+test_log_dir = 'logs/gradient_tape/' + current_time + '/test'
+train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+
+#######################################################################################
 
 def train_step_gen(args):
 	with tf.GradientTape() as tape:
@@ -59,6 +71,8 @@ def test_step(args, epoch):
 	fake_sample = args.gen(z)
 	generate_and_save_images(fake_sample.numpy(), args.samples_dir, epoch)
 
+####################################################################################
+
 def train(args):
     for epoch in range(args.n_epoch):
         cnt = 0
@@ -73,6 +87,9 @@ def train(args):
         print (template.format(epoch + 1, args.gen_loss.result(), 
                     args.dis_loss.result()))
         
+        with train_summary_writer.as_default():
+            tf.summary.scalar("dis_loss",args.dis_loss.result(),step=epoch)
+            tf.summary.scalar("gen_loss",args.gen_loss.result(),step=epoch)
         test_step(args, epoch)
         args.dis_loss.reset_states()
         args.gen_loss.reset_states()
@@ -93,5 +110,5 @@ if __name__ == '__main__':
 	# Initialize Metrics
 	args.gen_loss = tf.keras.metrics.Mean(name = 'Generator_Loss')
 	args.dis_loss = tf.keras.metrics.Mean(name = 'Discriminator_Loss')
-
+     
 	train(args)
